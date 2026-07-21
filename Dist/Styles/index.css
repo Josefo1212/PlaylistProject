@@ -1,0 +1,131 @@
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--font);
+    color: var(--text-primary);
+    background: #0b0e1a;
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+/* ── Animated background orbs ────────────────────── */
+.bg-orbs {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.55;
+    will-change: transform;
+}
+
+.orb--1 {
+    width: 520px;
+    height: 520px;
+    background: radial-gradient(circle, var(--blue-200), transparent 70%);
+    top: -12%;
+    left: -8%;
+    animation: orbFloat1 18s ease-in-out infinite;
+}
+
+.orb--2 {
+    width: 440px;
+    height: 440px;
+    background: radial-gradient(circle, var(--pink-200), transparent 70%);
+    bottom: -10%;
+    right: -6%;
+    animation: orbFloat2 22s ease-in-out infinite;
+}
+
+.orb--3 {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, var(--blue-300), transparent 70%);
+    top: 50%;
+    right: 25%;
+    animation: orbFloat3 20s ease-in-out infinite;
+}
+
+.orb--4 {
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle, var(--pink-300), transparent 70%);
+    top: 30%;
+    left: 20%;
+    animation: orbFloat4 16s ease-in-out infinite;
+}
+
+@keyframes orbFloat1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33%      { transform: translate(60px, 40px) scale(1.08); }
+    66%      { transform: translate(-30px, 70px) scale(0.95); }
+}
+
+@keyframes orbFloat2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33%      { transform: translate(-50px, -50px) scale(1.1); }
+    66%      { transform: translate(40px, -30px) scale(0.92); }
+}
+
+@keyframes orbFloat3 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(-40px, 30px) scale(1.06); }
+}
+
+@keyframes orbFloat4 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(50px, -40px) scale(1.12); }
+}
+
+/* ── Noise overlay for texture ───────────────────── */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px;
+}
+
+/* ── App layer ───────────────────────────────────── */
+#app {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+}
+
+/* ── Selection color ─────────────────────────────── */
+::selection {
+    background: rgba(160, 196, 255, 0.35);
+    color: #fff;
+}
+
+/* ── Scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
