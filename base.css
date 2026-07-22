@@ -1,0 +1,155 @@
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+body {
+  font-family: var(--font);
+  color: var(--text-primary);
+  background: var(--bg-base);
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+::selection { background: rgba(124, 92, 255, 0.35); color: #fff; }
+
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.aurora__layer {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  will-change: transform;
+}
+
+.aurora__layer--1 {
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(124, 92, 255, 0.3), transparent 70%);
+  top: -20%; left: -12%;
+  animation: aDrift1 24s ease-in-out infinite;
+}
+
+.aurora__layer--2 {
+  width: 550px; height: 550px;
+  background: radial-gradient(circle, rgba(142, 197, 252, 0.18), transparent 70%);
+  bottom: -15%; right: 25%;
+  animation: aDrift2 30s ease-in-out infinite;
+}
+
+.aurora__layer--3 {
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, rgba(244, 114, 182, 0.14), transparent 70%);
+  top: 30%; left: 40%;
+  animation: aDrift3 22s ease-in-out infinite;
+}
+
+.aurora__layer--4 {
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.1), transparent 70%);
+  top: 65%; left: 8%;
+  animation: aDrift4 28s ease-in-out infinite;
+}
+
+@keyframes aDrift1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(90px, 60px) scale(1.12); }
+  66% { transform: translate(-50px, 90px) scale(0.94); }
+}
+@keyframes aDrift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-70px, -70px) scale(1.1); }
+  66% { transform: translate(60px, -50px) scale(0.92); }
+}
+@keyframes aDrift3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-60px, 50px) scale(1.15); }
+}
+@keyframes aDrift4 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(70px, -60px) scale(1.18); }
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 65% 55% at 50% 50%, transparent 0%, rgba(9, 9, 11, 0.45) 70%, rgba(9, 9, 11, 0.85) 100%);
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.15); }
+
+:focus-visible {
+  outline: 2px solid var(--accent-purple);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 24px rgba(124, 92, 255, 0.15); }
+  50% { box-shadow: 0 0 48px rgba(124, 92, 255, 0.3); }
+}
+
+@keyframes vinylSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes vinylSpinStop {
+  from { transform: rotate(var(--vinyl-angle, 0deg)); }
+  to { transform: rotate(calc(var(--vinyl-angle, 0deg) + 45deg)); }
+}
+
+@keyframes tonearmPlay {
+  from { transform: rotate(-30deg); }
+  to { transform: rotate(-8deg); }
+}
+
+@keyframes tonearmPause {
+  from { transform: rotate(-8deg); }
+  to { transform: rotate(-30deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}

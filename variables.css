@@ -1,0 +1,52 @@
+:root {
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --bg-base:       #09090B;
+  --bg-surface:    #111827;
+  --bg-elevated:   #1E1B4B;
+  --bg-card:       rgba(17, 24, 39, 0.6);
+  --bg-card-hover: rgba(30, 27, 75, 0.5);
+  --bg-glass:      rgba(17, 24, 39, 0.4);
+  --bg-glass-heavy:rgba(9, 9, 11, 0.88);
+
+  --accent-purple: #7C5CFF;
+  --accent-violet: #A78BFA;
+  --accent-blue:   #8EC5FC;
+  --accent-pink:   #F472B6;
+  --accent-deep:   #5B4B8A;
+
+  --text-primary:  #F8FAFC;
+  --text-secondary:rgba(248, 250, 252, 0.6);
+  --text-muted:    rgba(248, 250, 252, 0.32);
+  --text-dim:      rgba(248, 250, 252, 0.16);
+
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-light:  rgba(255, 255, 255, 0.1);
+  --border-focus:  rgba(124, 92, 255, 0.45);
+
+  --shadow-sm:     0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-md:     0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-lg:     0 16px 64px rgba(0, 0, 0, 0.55);
+  --shadow-glow:   0 0 60px rgba(124, 92, 255, 0.2);
+  --shadow-pink:   0 0 60px rgba(244, 114, 182, 0.15);
+
+  --radius-xs:     6px;
+  --radius-sm:     10px;
+  --radius-md:     16px;
+  --radius-lg:     24px;
+  --radius-xl:     32px;
+  --radius-full:   9999px;
+
+  --ease-out:      cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth:   cubic-bezier(0.4, 0, 0.2, 1);
+
+  --transition-fast:   180ms var(--ease-smooth);
+  --transition-normal: 320ms var(--ease-out);
+  --transition-slow:   500ms var(--ease-out);
+
+  --sidebar-w:     76px;
+  --sidebar-w-full:240px;
+  --player-w:      340px;
+  --topbar-h:      72px;
+}
