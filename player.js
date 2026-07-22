@@ -10,7 +10,7 @@ const STORAGE = {
   LAST_PLAYED: 'playlistapp_last_played'
 };
 
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 4;
 
 const DEFAULT_COVER = 'data:image/svg+xml,' + encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
@@ -27,6 +27,10 @@ const DEFAULT_COVER = 'data:image/svg+xml,' + encodeURIComponent(
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 
+function encodePath(p) {
+  return p.split('/').map(segment => encodeURIComponent(segment)).join('/');
+}
+
 function formatTime(sec) {
   if (!sec || isNaN(sec)) return '0:00';
   const m = Math.floor(sec / 60);
@@ -36,13 +40,33 @@ function formatTime(sec) {
 
 function parsePath(path) {
   const parts = path.split('/').filter(Boolean);
-  const filename = parts.pop().replace(/\.mp3$/i, '')
-    .replace(/[-_]/g, ' ').replace(/\s*\(\d+\)\s*/g, '')
-    .replace(/\b\d{3,}\b/g, '').replace(/\s+/g, ' ').trim();
+  const rawName = parts.pop().replace(/\.mp3$/i, '');
+
   const afterBase = parts.slice(3);
-  const artist = afterBase[0] || null;
+  const artist = afterBase[0] || 'Desconocido';
   const album = afterBase[1] || 'Demo';
-  return { title: filename, artist, album };
+
+  let name = rawName
+    .replace(/(\s*\(\d+\)\s*)+$/g, '')
+    .replace(/[-_]?\s*320\s*$/i, '')
+    .trim();
+
+  if (name.includes(' - ')) {
+    name = name.split(' - ')[0].trim();
+  } else if (name.includes('- ')) {
+    name = name.split('- ')[0].trim();
+  }
+
+  name = name.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+
+  if (artist && artist !== 'Desconocido') {
+    const escaped = artist.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    name = name.replace(new RegExp('\\s*' + escaped + '\\s*', 'gi'), ' ').trim();
+  }
+
+  name = name.replace(/^[-_]\s*/, '').replace(/\s*[-_]$/, '').trim();
+
+  return { title: name || rawName, artist, album };
 }
 
 function getCoverFromDir(path) {
@@ -224,8 +248,9 @@ class PlaylistApp {
       searchInput:    $('#searchInput'),
       btnLogout:      $('#btnLogout'),
       btnHelp:        $('#btnHelp'),
-      filterGenre:    $('#filterGenre'),
       sortBy:         $('#sortBy'),
+      genreChips:     $('#genreChips'),
+      exploreCount:   $('#exploreCount'),
       greeting:       $('#greeting'),
       userName:       $('#userName'),
       featuredCard:   $('#featuredCard'),
@@ -377,7 +402,7 @@ class PlaylistApp {
     const txtPath = mp3Path.replace(/\.mp3$/i, '.txt');
 
     try {
-      const res = await fetch(lrcPath);
+      const res = await fetch(encodePath(lrcPath));
       if (res.ok) {
         const text = await res.text();
         this.lyrics = parseLRC(text);
@@ -387,7 +412,7 @@ class PlaylistApp {
     } catch {}
 
     try {
-      const res = await fetch(txtPath);
+      const res = await fetch(encodePath(txtPath));
       if (res.ok) {
         const text = await res.text();
         this.els.lyricsBody.innerHTML = `<div class="lyrics__line" style="white-space:pre-wrap;line-height:1.9;">${this.escapeHtml(text)}</div>`;
@@ -487,17 +512,40 @@ class PlaylistApp {
     this.tracks = loaded;
 
     const genres = [...new Set(this.tracks.map(t => t.genre))].sort();
-    this.els.filterGenre.innerHTML = '<option value="">Todos los generos</option>';
-    genres.forEach(g => {
-      const opt = document.createElement('option');
-      opt.value = g;
-      opt.textContent = g;
-      this.els.filterGenre.appendChild(opt);
-    });
+    this.renderGenreChips(genres);
 
     this.queue.set(this.tracks, null);
     this.showLoading(false);
     console.log(`✓ ${this.tracks.length} canciones cargadas`);
+  }
+
+  renderGenreChips(genres) {
+    const container = this.els.genreChips;
+    if (!container) return;
+    container.innerHTML = '';
+
+    const allChip = document.createElement('button');
+    allChip.className = 'genre-chip active';
+    allChip.dataset.genre = '';
+    allChip.textContent = 'Todos';
+    container.appendChild(allChip);
+
+    genres.forEach(g => {
+      const chip = document.createElement('button');
+      chip.className = 'genre-chip';
+      chip.dataset.genre = g;
+      chip.textContent = g;
+      container.appendChild(chip);
+    });
+
+    container.addEventListener('click', (e) => {
+      const chip = e.target.closest('.genre-chip');
+      if (!chip) return;
+      container.querySelectorAll('.genre-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      this.filterGenre = chip.dataset.genre;
+      this.renderExplore();
+    });
   }
 
   readTags(path) {
@@ -508,14 +556,14 @@ class PlaylistApp {
       }
       const fallback = parsePath(path);
       const dirCover = getCoverFromDir(path);
-      jsmediatags.read(path, {
+      jsmediatags.read(encodePath(path), {
         onSuccess: (tag) => {
           const t = tag.tags;
-          const cover = t.picture ? this.pictureToDataURL(t.picture) : dirCover;
+          const cover = dirCover || (t.picture ? this.pictureToDataURL(t.picture) : null);
           const data = {
-            title:  t.title  || fallback.title,
-            artist: t.artist || fallback.artist || 'Desconocido',
-            album:  t.album  || fallback.album,
+            title:  fallback.title,
+            artist: fallback.artist || 'Desconocido',
+            album:  fallback.album,
             genre:  t.genre  || 'Sin genero',
             year:   t.year   || null,
             cover:  cover
@@ -616,6 +664,9 @@ class PlaylistApp {
   renderExplore() {
     this.els.exploreGrid.innerHTML = '';
     const filtered = this.getFilteredTracks();
+    if (this.els.exploreCount) {
+      this.els.exploreCount.textContent = `${filtered.length} de ${this.tracks.length} canciones`;
+    }
     if (filtered.length === 0) {
       this.els.exploreGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p>No se encontraron canciones</p></div>';
     } else {
@@ -736,7 +787,7 @@ class PlaylistApp {
 
     this.initAudioContext();
 
-    this.audio.src = track.path;
+    this.audio.src = encodePath(track.path);
     this.audio.load();
     try { await this.audio.play(); } catch (e) {
       this.toast.error('No se pudo reproducir este archivo');
@@ -1055,7 +1106,6 @@ class PlaylistApp {
       if (this.activeSection !== 'explore') this.switchSection('explore');
     });
 
-    this.els.filterGenre?.addEventListener('change', (e) => { this.filterGenre = e.target.value; this.renderExplore(); });
     this.els.sortBy?.addEventListener('change', (e) => { this.sortBy = e.target.value; this.renderExplore(); });
 
     document.addEventListener('click', (e) => {

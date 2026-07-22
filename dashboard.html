@@ -111,15 +111,18 @@
 
       <section class="section section--explore" id="section-explore">
         <div class="section__header"><h1>Explorar</h1></div>
-        <div class="explore__filters">
-          <select id="filterGenre"><option value="">Todos los generos</option></select>
-          <select id="sortBy">
-            <option value="title">Nombre</option>
-            <option value="artist">Artista</option>
-            <option value="album">Album</option>
-            <option value="year">Ano</option>
-          </select>
+        <div class="explore__toolbar">
+          <div class="explore__genre-chips" id="genreChips"></div>
+          <div class="explore__sort-wrap">
+            <svg class="explore__sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h12M3 18h6"/></svg>
+            <select id="sortBy">
+              <option value="title">Nombre</option>
+              <option value="artist">Artista</option>
+              <option value="album">Album</option>
+            </select>
+          </div>
         </div>
+        <div class="explore__count" id="exploreCount"></div>
         <div class="song-grid" id="exploreGrid"></div>
       </section>
 

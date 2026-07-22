@@ -360,7 +360,8 @@
 }
 .hero__fav svg { width: 18px; height: 18px; }
 .hero__fav:hover { color: var(--accent-pink); background: rgba(244, 114, 182, 0.08); border-color: rgba(244, 114, 182, 0.15); }
-.hero__fav.is-fav svg { fill: var(--accent-pink); stroke: var(--accent-pink); }
+.hero__fav.is-fav { color: var(--accent-pink); }
+.hero__fav.is-fav svg path { fill: var(--accent-pink); stroke: var(--accent-pink); }
 
 .carousel {
   display: flex;
@@ -485,42 +486,112 @@
   flex-shrink: 0;
   padding: 5px;
   border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
   transition: all var(--transition-normal);
   color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .song-card__fav svg { width: 15px; height: 15px; }
-.song-card__fav:hover { color: var(--accent-pink); background: rgba(244, 114, 182, 0.08); }
-.song-card__fav.is-fav svg { fill: var(--accent-pink); stroke: var(--accent-pink); }
+.song-card__fav:hover { color: var(--accent-pink); background: rgba(244, 114, 182, 0.1); border-color: rgba(244, 114, 182, 0.2); }
+.song-card__fav.is-fav { color: var(--accent-pink); }
+.song-card__fav.is-fav svg path { fill: var(--accent-pink); stroke: var(--accent-pink); }
 
-.explore__filters {
+.explore__toolbar {
   display: flex;
-  gap: 10px;
-  margin-bottom: 24px;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
 }
 
-.explore__filters select {
+.explore__genre-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  flex: 1;
+  scrollbar-width: none;
+  padding: 2px 0;
+}
+.explore__genre-chips::-webkit-scrollbar { display: none; }
+
+.genre-chip {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  white-space: nowrap;
+}
+.genre-chip:hover {
+  background: rgba(124, 92, 255, 0.08);
+  border-color: var(--border-purple);
+  color: var(--text-primary);
+}
+.genre-chip.active {
+  background: rgba(124, 92, 255, 0.15);
+  border-color: var(--accent-purple);
+  color: var(--accent-purple);
+  box-shadow: 0 0 20px rgba(124, 92, 255, 0.1);
+}
+
+.explore__sort-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.explore__sort-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.explore__sort-wrap select {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-full);
-  padding: 9px 16px;
+  padding: 8px 32px 8px 34px;
   color: var(--text-primary);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
+  font-weight: 500;
   font-family: var(--font);
   outline: none;
   cursor: pointer;
   transition: all var(--transition-normal);
   -webkit-appearance: none;
-  padding-right: 34px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(240,240,245,0.3)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
 }
-.explore__filters select:focus {
+.explore__sort-wrap select:hover {
+  border-color: var(--border-purple);
+  background-color: rgba(124, 92, 255, 0.06);
+}
+.explore__sort-wrap select:focus {
   border-color: var(--border-focus);
   background-color: rgba(255, 255, 255, 0.06);
 }
-.explore__filters select option { background: var(--bg-surface); color: var(--text-primary); }
+.explore__sort-wrap select option { background: var(--bg-surface); color: var(--text-primary); }
+
+.explore__count {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  letter-spacing: 0.02em;
+}
 
 .empty-state {
   text-align: center;
@@ -890,7 +961,8 @@
 }
 .player-panel__fav svg { width: 17px; height: 17px; }
 .player-panel__fav:hover { color: var(--accent-pink); background: rgba(244, 114, 182, 0.08); }
-.player-panel__fav.is-fav svg { fill: var(--accent-pink); stroke: var(--accent-pink); }
+.player-panel__fav.is-fav { color: var(--accent-pink); }
+.player-panel__fav.is-fav svg path { fill: var(--accent-pink); stroke: var(--accent-pink); }
 
 .player-panel__controls {
   display: flex;
