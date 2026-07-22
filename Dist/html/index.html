@@ -6,10 +6,9 @@
     <title>Playlist App</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../Styles/variables.css">
-    <link rel="stylesheet" href="../Styles/index.css">
-    <link rel="stylesheet" href="../Styles/glass.css">
+    <link rel="stylesheet" href="../Styles/base.css">
     <link rel="stylesheet" href="../Styles/auth.css">
 </head>
 <body>
@@ -74,6 +73,11 @@
                                     <svg class="eye-closed" viewBox="0 0 20 20" fill="currentColor" style="display:none"><path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd"/><path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z"/></svg>
                                 </button>
                             </div>
+                        </div>
+
+                        <div class="form-check">
+                            <input type="checkbox" id="remember-me" class="form-check__input">
+                            <label for="remember-me" class="form-check__label">Recordarme</label>
                         </div>
 
                         <div class="form-error" id="login-error"></div>
@@ -161,13 +165,9 @@
                 </div>
             </div>
         </div>
-
-        <div class="app-container" id="app-container" style="display:none">
-            <h1 style="color:white;text-align:center;margin-top:40vh;font-family:var(--font)">Playlist App — Próximamente</h1>
-        </div>
     </div>
 
     <script type="module" src="../../Src/db/indexedDB.js"></script>
-    <script type="module" src="../../Src/app.js"></script>
+    <script type="module" src="../../Src/Components/auth.js"></script>
 </body>
 </html>
