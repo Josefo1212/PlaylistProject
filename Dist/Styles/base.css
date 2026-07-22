@@ -99,3 +99,166 @@ body {
 }
 
 #colorCanvas { display: none; }
+
+/* ── Loading overlay ──────────────────────────────── */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  background: rgba(7, 7, 10, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease-out);
+}
+
+.loading-overlay--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Spinning vinyl ──────────────────────────────── */
+.loading-vinyl {
+  width: 140px;
+  height: 140px;
+}
+
+.loading-vinyl__disc {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: #111;
+  position: relative;
+  animation: loadingVinylSpin 2.2s linear infinite;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 2px 12px rgba(0, 0, 0, 0.5),
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    inset 0 0 40px rgba(0, 0, 0, 0.6);
+}
+
+.loading-vinyl__rings {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.loading-vinyl__rings span {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.025);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.loading-vinyl__rings span:nth-child(1)  { width: 94%; height: 94%; }
+.loading-vinyl__rings span:nth-child(2)  { width: 86%; height: 86%; border-color: rgba(255, 255, 255, 0.03); }
+.loading-vinyl__rings span:nth-child(3)  { width: 78%; height: 78%; }
+.loading-vinyl__rings span:nth-child(4)  { width: 70%; height: 70%; border-color: rgba(255, 255, 255, 0.03); }
+.loading-vinyl__rings span:nth-child(5)  { width: 62%; height: 62%; }
+.loading-vinyl__rings span:nth-child(6)  { width: 54%; height: 54%; border-color: rgba(255, 255, 255, 0.03); }
+.loading-vinyl__rings span:nth-child(7)  { width: 46%; height: 46%; }
+.loading-vinyl__rings span:nth-child(8)  { width: 40%; height: 40%; border-color: rgba(255, 255, 255, 0.025); }
+.loading-vinyl__rings span:nth-child(9)  { width: 36%; height: 36%; }
+.loading-vinyl__rings span:nth-child(10) { width: 32%; height: 32%; border-color: rgba(255, 255, 255, 0.02); }
+
+.loading-vinyl__disc::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(
+      circle at center,
+      transparent 0px,
+      transparent 2px,
+      rgba(255, 255, 255, 0.015) 2px,
+      rgba(255, 255, 255, 0.015) 3px
+    );
+  pointer-events: none;
+}
+
+.loading-vinyl__disc::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 35%,
+    transparent 65%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+.loading-vinyl__reflection {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(
+    200deg,
+    transparent 0%,
+    transparent 30%,
+    rgba(255, 255, 255, 0.04) 45%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 55%,
+    transparent 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 3;
+}
+
+.loading-vinyl__label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--accent-deep), var(--accent-purple));
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.06),
+    0 0 0 4px rgba(0, 0, 0, 0.5),
+    0 2px 12px rgba(0, 0, 0, 0.5);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-vinyl__label svg {
+  width: 20px;
+  height: 20px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.loading-vinyl__text {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  animation: loadingTextPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes loadingVinylSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes loadingTextPulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}

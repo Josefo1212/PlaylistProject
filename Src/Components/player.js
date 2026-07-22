@@ -229,15 +229,38 @@ class PlaylistApp {
     this.colorCanvas = $('#colorCanvas');
     this.colorCtx = this.colorCanvas ? this.colorCanvas.getContext('2d') : null;
 
-    this.loadPersistedState();
-    this.cacheDOM();
-    this.setupEvents();
-    this.updateVolumeUI();
-    this.updateUserAvatar();
-    this.startVinylAnimation();
-    await this.loadTracks();
-    this.renderAll();
-    this.toast.info(`Biblioteca cargada: ${this.tracks.length} canciones`);
+    try {
+      this.loadPersistedState();
+      this.cacheDOM();
+      this.setupEvents();
+      this.updateVolumeUI();
+      this.updateUserAvatar();
+      this.startVinylAnimation();
+    } catch (err) {
+      console.error('Error during init setup:', err);
+      hideWait();
+      return;
+    }
+
+    if (typeof showWait === 'function') showWait('Cargando tu biblioteca...');
+    if (window.Skeleton) Skeleton.showHome();
+    const _hideTimeout = setTimeout(() => {
+      console.warn('Wait overlay safety timeout fired');
+      if (typeof hideWait === 'function') hideWait();
+    }, 5000);
+
+    try {
+      await this.loadTracks();
+      if (window.Skeleton) Skeleton.hideHome();
+      this.renderAll();
+      this.toast.info(`Biblioteca cargada: ${this.tracks.length} canciones`);
+    } catch (err) {
+      console.error('Error loading tracks:', err);
+      if (window.Skeleton) Skeleton.hideHome();
+    } finally {
+      clearTimeout(_hideTimeout);
+      if (typeof hideWait === 'function') hideWait();
+    }
   }
 
   cacheDOM() {
