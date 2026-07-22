@@ -190,7 +190,7 @@ if (sessionStorage.getItem('currentUser')) {
 
       await switchView('login');
       registerForm.reset();
-      showError(loginError, '¡Cuenta creada! Iniciá sesión', 'var(--blue-200)');
+      showError(loginError, '¡Cuenta creada! Iniciá sesión', 'var(--accent-purple)');
     } catch {
       showError(registerError, 'Error al crear la cuenta');
       setLoading(btn, false);

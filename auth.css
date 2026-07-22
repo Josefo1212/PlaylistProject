@@ -8,8 +8,8 @@
     min-height: 100vh;
     padding: 24px;
     opacity: 1;
-    transition: opacity 500ms cubic-bezier(0.22, 1, 0.36, 1),
-                transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity var(--transition-slow),
+                transform var(--transition-slow);
 }
 
 .landing--hidden {
@@ -48,7 +48,7 @@
     font-weight: 800;
     letter-spacing: -0.035em;
     margin-bottom: 12px;
-    background: linear-gradient(135deg, var(--blue-100), #c9b0e8, var(--pink-100));
+    background: linear-gradient(135deg, var(--accent-blue), #c9b0e8, var(--accent-pink));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -77,10 +77,10 @@
     font-size: 0.92rem;
     font-weight: 600;
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--bg-glass);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    border: 1px solid var(--border-light);
     border-radius: var(--radius-lg);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
     cursor: pointer;
@@ -142,10 +142,10 @@
 }
 
 .auth-card__front {
-    background: rgba(255, 255, 255, 0.07);
+    background: var(--bg-card);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid var(--border-light);
     border-radius: var(--radius-xl);
     box-shadow:
         0 8px 48px rgba(0, 0, 0, 0.3),
@@ -157,8 +157,8 @@
     opacity: 1;
     transform: translateX(0) scale(1);
     transition:
-        opacity var(--transition-smooth),
-        transform var(--transition-smooth);
+        opacity var(--transition-normal),
+        transform var(--transition-normal);
 }
 
 /* Top edge highlight */
@@ -210,7 +210,7 @@
 }
 
 .auth-card__front--slide-in {
-    animation: slideIn 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation: slideIn var(--transition-slow) forwards;
 }
 
 @keyframes slideIn {
@@ -255,7 +255,7 @@
     font-weight: 700;
     letter-spacing: -0.02em;
     margin-bottom: 6px;
-    background: linear-gradient(135deg, var(--blue-100), var(--pink-100));
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-pink));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -307,7 +307,7 @@
     left: 14px;
     width: 16px;
     height: 16px;
-    color: var(--text-placeholder);
+    color: var(--text-muted);
     pointer-events: none;
     transition: color var(--transition-normal);
     z-index: 1;
@@ -319,33 +319,31 @@
     font-size: 0.92rem;
     font-family: var(--font);
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-glass);
+    border: 1px solid var(--border-light);
     border-radius: var(--radius-md);
     transition: all var(--transition-normal);
-    box-shadow: var(--shadow-input);
+    box-shadow: var(--shadow-sm);
 }
 
 .form-input:focus {
     outline: none;
-    border-color: rgba(160, 196, 255, 0.4);
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 0 3px rgba(160, 196, 255, 0.1), var(--shadow-input);
+    border-color: var(--border-focus);
+    background: var(--bg-glass);
+    box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.1), var(--shadow-sm);
 }
 
 .form-input:focus ~ .form-input-icon,
 .form-input:focus + .form-input-icon {
-    color: var(--blue-200);
+    color: var(--accent-purple);
 }
 
 .form-input-wrap:focus-within .form-input-icon {
-    color: var(--blue-200);
+    color: var(--accent-purple);
 }
 
 .form-input::placeholder {
-    color: var(--text-placeholder);
+    color: var(--text-muted);
 }
 
 /* ── Password toggle ─────────────────────────────── */
@@ -359,7 +357,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-placeholder);
+    color: var(--text-muted);
     transition: color var(--transition-fast);
     z-index: 1;
 }
@@ -376,7 +374,7 @@
 /* ── Error message ───────────────────────────────── */
 .form-error {
     font-size: 0.82rem;
-    color: var(--pink-300);
+    color: var(--accent-pink);
     min-height: 0;
     max-height: 0;
     overflow: hidden;
@@ -404,7 +402,7 @@
 .form-check__input {
     width: 16px;
     height: 16px;
-    accent-color: var(--blue-200);
+    accent-color: var(--accent-purple);
     cursor: pointer;
     border-radius: 4px;
 }
@@ -439,33 +437,33 @@
     width: 100%;
     margin-top: 4px;
     color: #0b0e1a;
-    background: linear-gradient(135deg, var(--blue-200), var(--blue-300));
-    box-shadow: 0 4px 20px rgba(90, 157, 230, 0.3);
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-violet));
+    box-shadow: 0 4px 20px rgba(124, 92, 255, 0.3);
 }
 
 .btn--primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 28px rgba(90, 157, 230, 0.45);
+    box-shadow: 0 6px 28px rgba(124, 92, 255, 0.45);
     filter: brightness(1.05);
 }
 
 .btn--primary:active {
     transform: translateY(0);
-    box-shadow: 0 2px 12px rgba(90, 157, 230, 0.3);
+    box-shadow: 0 2px 12px rgba(124, 92, 255, 0.3);
 }
 
 .btn--pink {
-    background: linear-gradient(135deg, var(--pink-200), var(--pink-300));
-    box-shadow: 0 4px 20px rgba(232, 112, 144, 0.3);
+    background: linear-gradient(135deg, var(--accent-pink), var(--accent-violet));
+    box-shadow: 0 4px 20px rgba(244, 114, 182, 0.3);
 }
 
 .btn--pink:hover {
-    box-shadow: 0 6px 28px rgba(232, 112, 144, 0.45);
+    box-shadow: 0 6px 28px rgba(244, 114, 182, 0.45);
     filter: brightness(1.05);
 }
 
 .btn--pink:active {
-    box-shadow: 0 2px 12px rgba(232, 112, 144, 0.3);
+    box-shadow: 0 2px 12px rgba(244, 114, 182, 0.3);
 }
 
 /* Shine sweep on hover */
@@ -534,7 +532,7 @@
     cursor: pointer;
     padding: 0;
     margin-left: 6px;
-    color: var(--blue-200);
+    color: var(--accent-purple);
     transition: color var(--transition-fast);
     position: relative;
 }
@@ -546,13 +544,13 @@
     left: 0;
     width: 0;
     height: 1.5px;
-    background: var(--blue-200);
+    background: var(--accent-purple);
     border-radius: 1px;
     transition: width var(--transition-normal);
 }
 
 .auth-card__link:hover {
-    color: var(--blue-100);
+    color: var(--accent-blue);
 }
 
 .auth-card__link:hover::after {
