@@ -3,6 +3,12 @@ let _overlay = null;
 function createOverlay() {
   if (_overlay) return _overlay;
 
+  const existing = document.querySelector('.loading-overlay');
+  if (existing) {
+    _overlay = existing;
+    return _overlay;
+  }
+
   const overlay = document.createElement('div');
   overlay.className = 'loading-overlay';
   overlay.innerHTML = `

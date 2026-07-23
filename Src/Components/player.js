@@ -272,6 +272,8 @@ class PlaylistApp {
 
   cacheDOM() {
     this.els = {
+      layout:         $('.layout'),
+      panelToggle:    $('#panelToggle'),
       sidebar:        $('#sidebar'),
       sidebarOverlay: $('#sidebarOverlay'),
       sidebarUser:    $('#sidebarUser'),
@@ -1661,6 +1663,22 @@ class PlaylistApp {
     this.els.btnRepeat?.addEventListener('click', () => this.toggleRepeat());
     this.els.btnMute?.addEventListener('click', () => this.toggleMute());
 
+    this.els.panelToggle?.addEventListener('click', () => {
+      const layout = this.els.layout;
+      if (!layout) return;
+      if (layout.classList.contains('panel-collapsed') || !layout.classList.contains('is-playing')) {
+        layout.classList.add('is-playing');
+        layout.classList.remove('panel-collapsed', 'panel-closing');
+      } else {
+        layout.classList.add('panel-closing');
+        setTimeout(() => {
+          layout.classList.remove('panel-closing');
+          layout.classList.add('panel-collapsed');
+          if (!this.isPlaying) layout.classList.remove('is-playing');
+        }, 280);
+      }
+    });
+
     this.els.btnQueue?.addEventListener('click', () => {
       this.els.queuePanel?.classList.toggle('open');
       this.renderQueue();
@@ -1786,9 +1804,10 @@ class PlaylistApp {
         this.isPlaying = false;
         this.updatePlayButton();
         this.setVinylPlaying(false);
+        this.els.layout?.classList.remove('is-playing');
       }
     });
-    this.audio.addEventListener('play', () => { this.isPlaying = true; this.updatePlayButton(); this.setVinylPlaying(true); });
+    this.audio.addEventListener('play', () => { this.isPlaying = true; this.updatePlayButton(); this.setVinylPlaying(true); this.els.layout?.classList.add('is-playing'); this.els.layout?.classList.remove('panel-collapsed'); });
     this.audio.addEventListener('pause', () => { this.isPlaying = false; this.updatePlayButton(); this.setVinylPlaying(false); });
     this.audio.addEventListener('error', () => {
       this.toast.error('Error al cargar el archivo de audio');
