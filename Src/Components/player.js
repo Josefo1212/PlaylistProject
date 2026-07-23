@@ -218,6 +218,12 @@ class PlaylistApp {
 
     this.colorCanvas = null;
     this.colorCtx = null;
+
+    this.playlists = [];
+    this.activePlaylistId = null;
+    this.editingPlaylistId = null;
+    this.contextMenuTrackId = null;
+    this.addModalTrackId = null;
   }
 
   async init() {
@@ -251,6 +257,7 @@ class PlaylistApp {
 
     try {
       await this.loadTracks();
+      window._appTracks = this.tracks;
       if (window.Skeleton) Skeleton.hideHome();
       this.renderAll();
       this.toast.info(`Biblioteca cargada: ${this.tracks.length} canciones`);
@@ -318,7 +325,35 @@ class PlaylistApp {
       helpModal:      $('#helpModal'),
       loadingBar:     $('#loadingBar'),
       lyricsBody:     $('#lyricsBody'),
-      dynamicBg:      $('#dynamicBg')
+      dynamicBg:      $('#dynamicBg'),
+      playlistGrid:   $('#playlistGrid'),
+      playlistsEmpty: $('#playlistsEmpty'),
+      btnCreatePlaylist: $('#btnCreatePlaylist'),
+      createPlaylistModal: $('#createPlaylistModal'),
+      playlistForm:   $('#playlistForm'),
+      plModalTitle:   $('#plModalTitle'),
+      plNameInput:    $('#plNameInput'),
+      plDescInput:    $('#plDescInput'),
+      btnPlCancel:    $('#btnPlCancel'),
+      plDetailHeader: $('#plDetailHeader'),
+      plDetailCover:  $('#plDetailCover'),
+      plDetailTitle:  $('#plDetailTitle'),
+      plDetailDesc:   $('#plDetailDesc'),
+      plDetailMeta:   $('#plDetailMeta'),
+      plDetailSongs:  $('#plDetailSongs'),
+      plDetailEmpty:  $('#plDetailEmpty'),
+      btnPlBack:      $('#btnPlBack'),
+      btnPlPlay:      $('#btnPlPlay'),
+      btnPlEdit:      $('#btnPlEdit'),
+      btnPlDelete:    $('#btnPlDelete'),
+      contextMenu:    $('#contextMenu'),
+      addToPlaylistModal: $('#addToPlaylistModal'),
+      plAddList:      $('#plAddList'),
+      btnPlAddNew:    $('#btnPlAddNew'),
+      confirmDeleteModal: $('#confirmDeleteModal'),
+      confirmDeleteMsg: $('#confirmDeleteMsg'),
+      btnConfirmCancel: $('#btnConfirmCancel'),
+      btnConfirmDelete: $('#btnConfirmDelete')
     };
   }
 
@@ -631,6 +666,7 @@ class PlaylistApp {
     this.renderExplore();
     this.renderLibrary();
     this.renderFavorites();
+    this.loadPlaylists();
   }
 
   renderHome() {
@@ -766,6 +802,9 @@ class PlaylistApp {
           </div>
         </div>
       </div>
+      <button class="song-card__more" data-track-id="${track.id}" aria-label="Opciones">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+      </button>
       <div class="song-card__body">
         <div class="song-card__text">
           <div class="song-card__title">${track.title}</div>
@@ -787,9 +826,11 @@ class PlaylistApp {
     $(`.sidebar__link[data-section="${name}"]`)?.classList.add('active');
     this.els.sidebar.classList.remove('open');
     this.els.sidebarOverlay.classList.remove('visible');
+    this.closeContextMenu();
     if (name === 'home') this.renderHome();
     if (name === 'explore') this.renderExplore();
     if (name === 'favorites') this.renderFavorites();
+    if (name === 'playlists') this.loadPlaylists();
   }
 
   async playTrack(id) {
@@ -1110,6 +1151,354 @@ class PlaylistApp {
     this.loadPrefs();
   }
 
+  /* ── Playlist Methods ─────────────────────────────── */
+
+  async loadPlaylists() {
+    try {
+      this.playlists = await PlaylistManager.getAllPlaylists();
+      this.renderPlaylistGrid();
+    } catch (e) {
+      console.error('Error loading playlists:', e);
+    }
+  }
+
+  renderPlaylistGrid() {
+    if (!this.els.playlistGrid) return;
+    this.els.playlistGrid.innerHTML = '';
+
+    if (this.playlists.length === 0) {
+      this.els.playlistsEmpty.style.display = 'block';
+      return;
+    }
+    this.els.playlistsEmpty.style.display = 'none';
+
+    for (const pl of this.playlists) {
+      const card = document.createElement('div');
+      card.className = 'playlist-card';
+      card.dataset.playlistId = pl.id;
+
+      const coverHTML = pl.cover
+        ? `<img class="playlist-card__cover" src="${pl.cover}" alt="${pl.name}">`
+        : `<div class="playlist-card__cover-default"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>`;
+
+      card.innerHTML = `
+        <div class="playlist-card__cover-wrap">${coverHTML}</div>
+        <button class="playlist-card__play-overlay" data-pl-play="${pl.id}" aria-label="Reproducir">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </button>
+        <div class="playlist-card__body">
+          <div class="playlist-card__name">${this.escapeHtml(pl.name)}</div>
+          <div class="playlist-card__count">Playlist</div>
+        </div>`;
+
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.playlist-card__play-overlay')) return;
+        this.openPlaylistDetail(pl.id);
+      });
+
+      const playBtn = card.querySelector('[data-pl-play]');
+      if (playBtn) {
+        playBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.playPlaylist(pl.id);
+        });
+      }
+
+      this.els.playlistGrid.appendChild(card);
+    }
+
+    this.loadPlaylistCovers();
+  }
+
+  async loadPlaylistCovers() {
+    for (const pl of this.playlists) {
+      const songs = await PlaylistManager.getPlaylistSongs(pl.id);
+      if (songs.length > 0) {
+        const track = this.tracks.find(t => t.id === songs[0].trackId);
+        if (track?.cover) {
+          pl.cover = track.cover;
+          const card = this.els.playlistGrid.querySelector(`[data-playlist-id="${pl.id}"] .playlist-card__cover-wrap`);
+          if (card) {
+            card.innerHTML = `<img class="playlist-card__cover" src="${track.cover}" alt="${pl.name}">`;
+          }
+        }
+      }
+    }
+  }
+
+  async openPlaylistDetail(id) {
+    this.activePlaylistId = id;
+    const pl = await PlaylistManager.getPlaylist(id);
+    if (!pl) return;
+
+    const songEntries = await PlaylistManager.getPlaylistSongs(id);
+    const songTracks = songEntries
+      .map(e => ({ ...e, track: this.tracks.find(t => t.id === e.trackId) }))
+      .filter(e => e.track);
+
+    this.els.plDetailTitle.textContent = pl.name;
+    this.els.plDetailDesc.textContent = pl.description || '';
+    this.els.plDetailDesc.style.display = pl.description ? '' : 'none';
+    this.els.plDetailMeta.textContent = `${songTracks.length} canciones`;
+
+    if (pl.cover || (songTracks.length > 0 && songTracks[0].track?.cover)) {
+      const coverSrc = pl.cover || songTracks[0].track.cover;
+      this.els.plDetailCover.innerHTML = `<img src="${coverSrc}" alt="${pl.name}">`;
+    } else {
+      this.els.plDetailCover.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>';
+    }
+
+    this.renderPlaylistSongs(songTracks);
+
+    $$('.section').forEach(s => s.classList.remove('active'));
+    $('#section-playlist-detail')?.classList.add('active');
+    $$('.sidebar__link').forEach(l => l.classList.remove('active'));
+  }
+
+  renderPlaylistSongs(songEntries) {
+    this.els.plDetailSongs.innerHTML = '';
+    if (songEntries.length === 0) {
+      this.els.plDetailEmpty.style.display = 'block';
+      return;
+    }
+    this.els.plDetailEmpty.style.display = 'none';
+
+    const list = document.createElement('div');
+    list.className = 'pl-song-list';
+
+    songEntries.forEach((entry, i) => {
+      const t = entry.track;
+      const isActive = this.currentTrack?.id === t.id;
+
+      const item = document.createElement('div');
+      item.className = 'pl-song-item' + (isActive ? ' pl-song-item--active' : '');
+      item.dataset.trackId = t.id;
+
+      const coverSrc = t.cover || null;
+      const coverEl = coverSrc
+        ? `<img class="pl-song-item__cover" src="${coverSrc}" alt="${t.title}">`
+        : `<div class="pl-song-item__cover--default"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>`;
+
+      item.innerHTML = `
+        <span class="pl-song-item__num">${i + 1}</span>
+        ${coverEl}
+        <div class="pl-song-item__info">
+          <span class="pl-song-item__title">${this.escapeHtml(t.title)}</span>
+          <span class="pl-song-item__artist">${this.escapeHtml(t.artist)}</span>
+        </div>
+        <button class="pl-song-item__remove" data-remove-track="${t.id}" title="Quitar de la playlist">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>`;
+
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('.pl-song-item__remove')) return;
+        this.playTrack(t.id);
+      });
+
+      list.appendChild(item);
+    });
+
+    list.querySelectorAll('.pl-song-item__remove').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const trackId = parseInt(btn.dataset.removeTrack);
+        await this.removeSongFromCurrentPlaylist(trackId);
+      });
+    });
+
+    this.els.plDetailSongs.appendChild(list);
+  }
+
+  async removeSongFromCurrentPlaylist(trackId) {
+    if (!this.activePlaylistId) return;
+    await PlaylistManager.removeSongFromPlaylist(this.activePlaylistId, trackId);
+    this.toast.info('Cancion eliminada de la playlist');
+    this.openPlaylistDetail(this.activePlaylistId);
+    this.loadPlaylists();
+  }
+
+  async playPlaylist(id) {
+    const songs = await PlaylistManager.getPlaylistSongs(id);
+    const trackList = songs
+      .map(e => this.tracks.find(t => t.id === e.trackId))
+      .filter(Boolean);
+    if (trackList.length === 0) {
+      this.toast.info('La playlist esta vacia');
+      return;
+    }
+    this.queue.set(trackList, trackList[0].id);
+    this.playTrack(trackList[0].id);
+    this.toast.success(`Reproduciendo playlist: ${(await PlaylistManager.getPlaylist(id))?.name || ''}`);
+  }
+
+  /* ── Context Menu ─────────────────────────────────── */
+
+  showContextMenu(x, y, trackId) {
+    this.contextMenuTrackId = trackId;
+    const menu = this.els.contextMenu;
+    if (!menu) return;
+
+    const isFav = this.favorites.has(trackId);
+    const favBtn = menu.querySelector('[data-action="add-to-fav"] span');
+    if (favBtn) favBtn.textContent = isFav ? 'Quitar de Favoritos' : 'Favorito';
+
+    menu.style.left = Math.min(x, window.innerWidth - 220) + 'px';
+    menu.style.top = Math.min(y, window.innerHeight - 200) + 'px';
+    menu.classList.add('open');
+  }
+
+  closeContextMenu() {
+    this.els.contextMenu?.classList.remove('open');
+    this.contextMenuTrackId = null;
+  }
+
+  /* ── Create / Edit Playlist Modal ─────────────────── */
+
+  openCreatePlaylistModal(editId = null) {
+    this.editingPlaylistId = editId;
+    const modal = this.els.createPlaylistModal;
+    if (!modal) return;
+
+    if (editId) {
+      this.els.plModalTitle.textContent = 'Editar Playlist';
+      PlaylistManager.getPlaylist(editId).then(pl => {
+        if (pl) {
+          this.els.plNameInput.value = pl.name;
+          this.els.plDescInput.value = pl.description || '';
+        }
+      });
+    } else {
+      this.els.plModalTitle.textContent = 'Crear Playlist';
+      this.els.plNameInput.value = '';
+      this.els.plDescInput.value = '';
+    }
+
+    modal.classList.add('open');
+    setTimeout(() => this.els.plNameInput.focus(), 200);
+  }
+
+  closeCreatePlaylistModal() {
+    this.els.createPlaylistModal?.classList.remove('open');
+    this.editingPlaylistId = null;
+    this.els.playlistForm?.reset();
+  }
+
+  async handlePlaylistSubmit(e) {
+    e.preventDefault();
+    const name = this.els.plNameInput.value.trim();
+    if (!name) return;
+
+    const desc = this.els.plDescInput.value.trim();
+
+    try {
+      if (this.editingPlaylistId) {
+        await PlaylistManager.updatePlaylist(this.editingPlaylistId, { name, description: desc });
+        this.toast.success('Playlist actualizada');
+        if (this.activePlaylistId === this.editingPlaylistId) {
+          this.openPlaylistDetail(this.editingPlaylistId);
+        }
+      } else {
+        const pl = await PlaylistManager.createPlaylist(name, desc);
+        this.toast.success('Playlist creada');
+        if (this.activePlaylistId) {
+          this.openPlaylistDetail(this.activePlaylistId);
+        }
+      }
+      this.closeCreatePlaylistModal();
+      await this.loadPlaylists();
+    } catch (err) {
+      this.toast.error('Error al guardar la playlist');
+      console.error(err);
+    }
+  }
+
+  /* ── Add to Playlist Modal ────────────────────────── */
+
+  async openAddToPlaylistModal(trackId) {
+    this.addModalTrackId = trackId;
+    const modal = this.els.addToPlaylistModal;
+    if (!modal) return;
+
+    this.els.plAddList.innerHTML = '';
+    const playlists = await PlaylistManager.getAllPlaylists();
+
+    if (playlists.length === 0) {
+      this.els.plAddList.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.84rem;">No tienes playlists aun</div>';
+    } else {
+      for (const pl of playlists) {
+        const songs = await PlaylistManager.getPlaylistSongs(pl.id);
+        const alreadyAdded = songs.some(s => s.trackId === trackId);
+
+        const btn = document.createElement('button');
+        btn.className = 'pl-add__item' + (alreadyAdded ? ' pl-add__item--added' : '');
+        btn.dataset.playlistId = pl.id;
+
+        const coverIcon = pl.cover
+          ? `<div class="pl-add__item-icon"><img src="${pl.cover}" alt=""></div>`
+          : `<div class="pl-add__item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>`;
+
+        btn.innerHTML = `${coverIcon}<span>${this.escapeHtml(pl.name)}</span>`;
+
+        if (!alreadyAdded) {
+          btn.addEventListener('click', () => this.addTrackToPlaylist(pl.id, trackId));
+        }
+
+        this.els.plAddList.appendChild(btn);
+      }
+    }
+
+    modal.classList.add('open');
+  }
+
+  closeAddToPlaylistModal() {
+    this.els.addToPlaylistModal?.classList.remove('open');
+    this.addModalTrackId = null;
+  }
+
+  async addTrackToPlaylist(playlistId, trackId) {
+    const added = await PlaylistManager.addSongToPlaylist(playlistId, trackId);
+    if (added) {
+      this.toast.success('Cancion agregada a la playlist');
+      if (this.activePlaylistId === playlistId) {
+        this.openPlaylistDetail(playlistId);
+      }
+    } else {
+      this.toast.info('Esta cancion ya esta en la playlist');
+    }
+    this.closeAddToPlaylistModal();
+    await this.loadPlaylists();
+  }
+
+  /* ── Delete Playlist Confirmation ─────────────────── */
+
+  openConfirmDeleteModal() {
+    if (!this.activePlaylistId) return;
+    const pl = this.playlists.find(p => p.id === this.activePlaylistId);
+    if (this.els.confirmDeleteMsg) {
+      this.els.confirmDeleteMsg.textContent = `¿Estas seguro de que quieres eliminar "${pl?.name || 'esta playlist'}"? Esta accion no se puede deshacer.`;
+    }
+    this.els.confirmDeleteModal?.classList.add('open');
+  }
+
+  closeConfirmDeleteModal() {
+    this.els.confirmDeleteModal?.classList.remove('open');
+  }
+
+  async deleteCurrentPlaylist() {
+    if (!this.activePlaylistId) return;
+    try {
+      await PlaylistManager.removePlaylist(this.activePlaylistId);
+      this.toast.success('Playlist eliminada');
+      this.closeConfirmDeleteModal();
+      this.activePlaylistId = null;
+      this.switchSection('playlists');
+      await this.loadPlaylists();
+    } catch (err) {
+      this.toast.error('Error al eliminar la playlist');
+      console.error(err);
+    }
+  }
+
   setupEvents() {
     $$('.sidebar__link').forEach(link => {
       link.addEventListener('click', (e) => { e.preventDefault(); this.switchSection(link.dataset.section); });
@@ -1139,6 +1528,8 @@ class PlaylistApp {
         this.toggleFavorite(parseInt(favBtn.dataset.favId));
         return;
       }
+
+      if (e.target.closest('.song-card__more')) return;
 
       const card = e.target.closest('.song-card');
       if (card) this.playTrack(parseInt(card.dataset.id));
@@ -1175,6 +1566,91 @@ class PlaylistApp {
     this.els.helpModal?.addEventListener('click', (e) => {
       if (e.target === this.els.helpModal || e.target.closest('.modal__close')) {
         this.els.helpModal.classList.remove('open');
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      const moreBtn = e.target.closest('.song-card__more');
+      if (moreBtn) {
+        e.stopPropagation();
+        const trackId = parseInt(moreBtn.dataset.trackId);
+        this.showContextMenu(e.clientX, e.clientY, trackId);
+        return;
+      }
+
+      const ctxItem = e.target.closest('.context-menu__item');
+      if (ctxItem) {
+        e.stopPropagation();
+        const action = ctxItem.dataset.action;
+        const trackId = this.contextMenuTrackId;
+        this.closeContextMenu();
+        if (trackId == null) return;
+
+        if (action === 'add-to-playlist') this.openAddToPlaylistModal(trackId);
+        else if (action === 'add-to-fav') this.toggleFavorite(trackId);
+        else if (action === 'play-next') {
+          const track = this.tracks.find(t => t.id === trackId);
+          if (track) { this.queue.add(track); this.toast.success('Agregado para reproducir siguiente'); }
+        }
+        else if (action === 'add-to-queue') {
+          const track = this.tracks.find(t => t.id === trackId);
+          if (track) { this.queue.add(track); this.toast.success('Agregado a la cola'); }
+        }
+        return;
+      }
+
+      if (!e.target.closest('.context-menu')) this.closeContextMenu();
+    });
+
+    document.addEventListener('contextmenu', (e) => {
+      const card = e.target.closest('.song-card');
+      if (card) {
+        e.preventDefault();
+        const trackId = parseInt(card.dataset.id);
+        this.showContextMenu(e.clientX, e.clientY, trackId);
+      }
+    });
+
+    this.els.btnCreatePlaylist?.addEventListener('click', () => this.openCreatePlaylistModal());
+    this.els.playlistForm?.addEventListener('submit', (e) => this.handlePlaylistSubmit(e));
+    this.els.btnPlCancel?.addEventListener('click', () => this.closeCreatePlaylistModal());
+    this.els.createPlaylistModal?.addEventListener('click', (e) => {
+      if (e.target === this.els.createPlaylistModal || e.target.closest('.modal__close')) {
+        this.closeCreatePlaylistModal();
+      }
+    });
+
+    this.els.btnPlBack?.addEventListener('click', () => {
+      this.activePlaylistId = null;
+      this.switchSection('playlists');
+    });
+
+    this.els.btnPlPlay?.addEventListener('click', () => {
+      if (this.activePlaylistId) this.playPlaylist(this.activePlaylistId);
+    });
+
+    this.els.btnPlEdit?.addEventListener('click', () => {
+      if (this.activePlaylistId) this.openCreatePlaylistModal(this.activePlaylistId);
+    });
+
+    this.els.btnPlDelete?.addEventListener('click', () => this.openConfirmDeleteModal());
+
+    this.els.btnPlAddNew?.addEventListener('click', () => {
+      this.closeAddToPlaylistModal();
+      this.openCreatePlaylistModal();
+    });
+
+    this.els.addToPlaylistModal?.addEventListener('click', (e) => {
+      if (e.target === this.els.addToPlaylistModal || e.target.closest('.modal__close')) {
+        this.closeAddToPlaylistModal();
+      }
+    });
+
+    this.els.btnConfirmCancel?.addEventListener('click', () => this.closeConfirmDeleteModal());
+    this.els.btnConfirmDelete?.addEventListener('click', () => this.deleteCurrentPlaylist());
+    this.els.confirmDeleteModal?.addEventListener('click', (e) => {
+      if (e.target === this.els.confirmDeleteModal || e.target.closest('.modal__close')) {
+        this.closeConfirmDeleteModal();
       }
     });
 
