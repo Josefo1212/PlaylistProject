@@ -6,10 +6,11 @@
     <title>Playlist App</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="variables.css">
-    <link rel="stylesheet" href="base.css">
-    <link rel="stylesheet" href="auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../Styles/variables.css">
+    <link rel="stylesheet" href="../Styles/index.css">
+    <link rel="stylesheet" href="../Styles/base.css">
+    <link rel="stylesheet" href="../Styles/auth.css">
 </head>
 <body>
     <div class="bg-orbs">
@@ -23,7 +24,7 @@
         <!-- ═══ LANDING ═══ -->
         <div class="landing" id="landing">
             <div class="landing__center">
-                <img src="Src/Assets/Image/logo.png" alt="PlaylistApp" class="landing__logo" loading="eager">
+                <img src="../../Src/Assets/Image/logo.png" alt="PlaylistApp" class="landing__logo" loading="eager">
                 <h1 class="landing__title">PlaylistApp</h1>
                 <p class="landing__subtitle">Tu música, tus reglas.<br>Crea playlists y organiza toda tu música en un solo lugar.</p>
                 <div class="landing__actions">
@@ -167,7 +168,9 @@
         </div>
     </div>
 
-    <script type="module" src="Src/db/indexedDB.js"></script>
-    <script type="module" src="auth.js"></script>
+    <script type="module" src="../../Src/db/indexedDB.js"></script>
+    <script type="module" src="../../Src/Components/wait-component.js"></script>
+    <script type="module" src="../../Src/app.js"></script>
+    <script type="module" src="../../Src/Components/auth.js"></script>
 </body>
 </html>

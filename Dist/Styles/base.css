@@ -1,0 +1,264 @@
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+body {
+  font-family: var(--font);
+  color: var(--text-primary);
+  background: var(--bg-base);
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+::selection { background: rgba(124, 92, 255, 0.35); color: #fff; }
+
+#dynamicBg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 1.2s var(--ease-out);
+}
+
+#dynamicBg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 20% 10%, var(--dyn-color-1), transparent 60%);
+  opacity: 0.18;
+  transition: background 1.5s var(--ease-out);
+}
+
+#dynamicBg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 80% 80%, var(--dyn-color-2), transparent 55%);
+  opacity: 0.12;
+  transition: background 1.5s var(--ease-out);
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, transparent 0%, rgba(7, 7, 10, 0.5) 65%, rgba(7, 7, 10, 0.9) 100%);
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.06); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.12); }
+
+:focus-visible {
+  outline: 2px solid var(--accent-purple);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(124, 92, 255, 0.1); }
+  50% { box-shadow: 0 0 40px rgba(124, 92, 255, 0.22); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulseRing {
+  0% { transform: scale(1); opacity: 0.4; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+#colorCanvas { display: none; }
+
+/* ── Loading overlay ──────────────────────────────── */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  background: rgba(7, 7, 10, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease-out);
+}
+
+.loading-overlay--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Spinning vinyl ──────────────────────────────── */
+.loading-vinyl {
+  width: 140px;
+  height: 140px;
+}
+
+.loading-vinyl__disc {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: #111;
+  position: relative;
+  animation: loadingVinylSpin 2.2s linear infinite;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 2px 12px rgba(0, 0, 0, 0.5),
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    inset 0 0 40px rgba(0, 0, 0, 0.6);
+}
+
+.loading-vinyl__rings {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.loading-vinyl__rings span {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.025);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.loading-vinyl__rings span:nth-child(1)  { width: 94%; height: 94%; }
+.loading-vinyl__rings span:nth-child(2)  { width: 86%; height: 86%; border-color: rgba(255, 255, 255, 0.03); }
+.loading-vinyl__rings span:nth-child(3)  { width: 78%; height: 78%; }
+.loading-vinyl__rings span:nth-child(4)  { width: 70%; height: 70%; border-color: rgba(255, 255, 255, 0.03); }
+.loading-vinyl__rings span:nth-child(5)  { width: 62%; height: 62%; }
+.loading-vinyl__rings span:nth-child(6)  { width: 54%; height: 54%; border-color: rgba(255, 255, 255, 0.03); }
+.loading-vinyl__rings span:nth-child(7)  { width: 46%; height: 46%; }
+.loading-vinyl__rings span:nth-child(8)  { width: 40%; height: 40%; border-color: rgba(255, 255, 255, 0.025); }
+.loading-vinyl__rings span:nth-child(9)  { width: 36%; height: 36%; }
+.loading-vinyl__rings span:nth-child(10) { width: 32%; height: 32%; border-color: rgba(255, 255, 255, 0.02); }
+
+.loading-vinyl__disc::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(
+      circle at center,
+      transparent 0px,
+      transparent 2px,
+      rgba(255, 255, 255, 0.015) 2px,
+      rgba(255, 255, 255, 0.015) 3px
+    );
+  pointer-events: none;
+}
+
+.loading-vinyl__disc::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 35%,
+    transparent 65%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+.loading-vinyl__reflection {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(
+    200deg,
+    transparent 0%,
+    transparent 30%,
+    rgba(255, 255, 255, 0.04) 45%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 55%,
+    transparent 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 3;
+}
+
+.loading-vinyl__label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--accent-deep), var(--accent-purple));
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.06),
+    0 0 0 4px rgba(0, 0, 0, 0.5),
+    0 2px 12px rgba(0, 0, 0, 0.5);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-vinyl__label svg {
+  width: 20px;
+  height: 20px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.loading-vinyl__text {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  animation: loadingTextPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes loadingVinylSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes loadingTextPulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
