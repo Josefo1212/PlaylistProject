@@ -197,6 +197,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           <p>Esta playlist esta vacia</p>
           <span>Busca canciones y agregalas desde el menu de opciones</span>
+          <button class="pl-empty__cta" id="btnPlAddSongs">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Agregar canciones
+          </button>
         </div>
       </section>
     </main>
@@ -403,6 +407,23 @@
           <button class="pl-form__btn pl-form__btn--cancel" id="btnConfirmCancel">Cancelar</button>
           <button class="pl-form__btn pl-form__btn--danger" id="btnConfirmDelete">Eliminar</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="addSongsToPlaylistModal">
+    <div class="modal__content modal__content--lg">
+      <div class="modal__header">
+        <h2>Agregar canciones</h2>
+        <button class="modal__close">&times;</button>
+      </div>
+      <div class="modal__body modal__body--flush">
+        <div class="song-browser__search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="songBrowserSearch" placeholder="Buscar por titulo, artista o album..." autocomplete="off">
+        </div>
+        <div class="song-browser__count" id="songBrowserCount"></div>
+        <div class="song-browser__list" id="songBrowserList"></div>
       </div>
     </div>
   </div>

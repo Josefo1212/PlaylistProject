@@ -353,7 +353,12 @@ class PlaylistApp {
       confirmDeleteModal: $('#confirmDeleteModal'),
       confirmDeleteMsg: $('#confirmDeleteMsg'),
       btnConfirmCancel: $('#btnConfirmCancel'),
-      btnConfirmDelete: $('#btnConfirmDelete')
+      btnConfirmDelete: $('#btnConfirmDelete'),
+      addSongsToPlaylistModal: $('#addSongsToPlaylistModal'),
+      songBrowserSearch: $('#songBrowserSearch'),
+      songBrowserCount: $('#songBrowserCount'),
+      songBrowserList: $('#songBrowserList'),
+      btnPlAddSongs: $('#btnPlAddSongs')
     };
   }
 
@@ -1469,6 +1474,109 @@ class PlaylistApp {
     await this.loadPlaylists();
   }
 
+  /* ── Song Browser Modal ───────────────────────────── */
+
+  openSongBrowser() {
+    if (!this.activePlaylistId) return;
+    const modal = this.els.addSongsToPlaylistModal;
+    if (!modal) return;
+
+    this._browserPlaylistId = this.activePlaylistId;
+    this._browserSearch = '';
+    if (this.els.songBrowserSearch) this.els.songBrowserSearch.value = '';
+    this.renderSongBrowserList();
+    modal.classList.add('open');
+    setTimeout(() => this.els.songBrowserSearch?.focus(), 200);
+  }
+
+  closeSongBrowser() {
+    this.els.addSongsToPlaylistModal?.classList.remove('open');
+    this._browserPlaylistId = null;
+  }
+
+  async renderSongBrowserList() {
+    const container = this.els.songBrowserList;
+    if (!container) return;
+
+    const playlistId = this._browserPlaylistId;
+    if (!playlistId) return;
+
+    const existing = await PlaylistManager.getPlaylistSongs(playlistId);
+    const existingIds = new Set(existing.map(s => s.trackId));
+
+    const q = (this._browserSearch || '').toLowerCase();
+    let filtered = this.tracks;
+    if (q) {
+      filtered = filtered.filter(t =>
+        t.title.toLowerCase().includes(q) ||
+        t.artist.toLowerCase().includes(q) ||
+        t.album.toLowerCase().includes(q)
+      );
+    }
+
+    if (this.els.songBrowserCount) {
+      const addedCount = existingIds.size;
+      this.els.songBrowserCount.textContent = `${filtered.length} canciones disponibles${addedCount > 0 ? ` — ${addedCount} en la playlist` : ''}`;
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="song-browser__empty">No se encontraron canciones</div>';
+      return;
+    }
+
+    container.innerHTML = '';
+    for (const track of filtered) {
+      const isAdded = existingIds.has(track.id);
+      const coverSrc = track.cover || null;
+
+      const item = document.createElement('div');
+      item.className = 'song-browser__item';
+      item.dataset.trackId = track.id;
+
+      const coverEl = coverSrc
+        ? `<img class="song-browser__item-cover" src="${coverSrc}" alt="${track.title}" loading="lazy">`
+        : `<div class="song-browser__item-cover--default"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>`;
+
+      const addIcon = isAdded
+        ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`
+        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+
+      item.innerHTML = `
+        ${coverEl}
+        <div class="song-browser__item-info">
+          <span class="song-browser__item-title">${this.escapeHtml(track.title)}</span>
+          <span class="song-browser__item-artist">${this.escapeHtml(track.artist)}</span>
+        </div>
+        <button class="song-browser__item-add ${isAdded ? 'song-browser__item-add--added' : ''}"
+                data-browser-add="${track.id}"
+                ${isAdded ? 'disabled' : ''}
+                title="${isAdded ? 'Ya esta en la playlist' : 'Agregar a la playlist'}">
+          ${addIcon}
+        </button>`;
+
+      container.appendChild(item);
+    }
+
+    container.querySelectorAll('.song-browser__item-add:not(.song-browser__item-add--added)').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const trackId = parseInt(btn.dataset.browserAdd);
+        if (!playlistId) return;
+
+        const added = await PlaylistManager.addSongToPlaylist(playlistId, trackId);
+        if (added) {
+          const track = this.tracks.find(t => t.id === trackId);
+          this.toast.success(`"${track?.title || ''}" agregada a la playlist`);
+          this.renderSongBrowserList();
+          this.openPlaylistDetail(playlistId);
+          this.loadPlaylists();
+        } else {
+          this.toast.info('Esta cancion ya esta en la playlist');
+        }
+      });
+    });
+  }
+
   /* ── Delete Playlist Confirmation ─────────────────── */
 
   openConfirmDeleteModal() {
@@ -1651,6 +1759,17 @@ class PlaylistApp {
     this.els.confirmDeleteModal?.addEventListener('click', (e) => {
       if (e.target === this.els.confirmDeleteModal || e.target.closest('.modal__close')) {
         this.closeConfirmDeleteModal();
+      }
+    });
+
+    this.els.btnPlAddSongs?.addEventListener('click', () => this.openSongBrowser());
+    this.els.songBrowserSearch?.addEventListener('input', (e) => {
+      this._browserSearch = e.target.value;
+      this.renderSongBrowserList();
+    });
+    this.els.addSongsToPlaylistModal?.addEventListener('click', (e) => {
+      if (e.target === this.els.addSongsToPlaylistModal || e.target.closest('.modal__close')) {
+        this.closeSongBrowser();
       }
     });
 
